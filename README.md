@@ -1,16 +1,3 @@
 # Spieleprogrammierung - Aufgabe 3
-
-<!-- TABLE OF CONTENTS -->
-## Informationen
-
-* [Teleportation ohne Kollision](#teleportation-ohne-kollision)
-
-
-
-
-
-
-
-
-
-## Teleportation ohne Kollision
+Vorab: Das Wiki habe ich für mich selbst gemacht da ich mich mit Github vertraut machen wollte.
+Im Wiki stehen aber dennoch nützliche Informationen.
