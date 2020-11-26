@@ -168,8 +168,6 @@ class Player(pygame.sprite.Sprite):
         else:
             self.image = pygame.transform.flip(self.image, False, False)
 
-        print(self.rect.bottom)
-
 class TeleportHelper(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -322,7 +320,8 @@ class Game(object):
 
             self.all_float_fields.update()
             if self.spieler.rect.bottom <= self.spieler.floatfield_activation:
-                self.all_float_fields.draw(self.screen)
+                if self.dead == 0:
+                    self.all_float_fields.draw(self.screen)
 
             self.all_pus.draw(self.screen)
             self.all_pus.update()
