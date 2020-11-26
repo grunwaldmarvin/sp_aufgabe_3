@@ -18,6 +18,7 @@ class Settings(object):
         return (Settings.width, Settings.height)
 
 class Falling_Object(pygame.sprite.Sprite):
+
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load(os.path.join(Settings.images_path, "crateWood.png")).convert_alpha()
@@ -50,6 +51,17 @@ class Falling_Object(pygame.sprite.Sprite):
 
     def respawn(self):
         game.all_falling_objects.add(Falling_Object())
+
+class FloatField(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load(os.path.join(Settings.images_path, "shield.png")).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.rect = self.image.get_rect()
+
+    def update(self):
+        self.rect.centery = game.spieler.rect.centery
+        self.rect.centerx = game.spieler.rect.centerx
 
 class Player(pygame.sprite.Sprite):
 
@@ -84,12 +96,16 @@ class Player(pygame.sprite.Sprite):
         self.image = self.images_idle[self.index_idle]
         self.image = pygame.transform.scale(self.image, (48, 84))
         self.rect = self.image.get_rect()
-        self.rect.bottom = Settings.height
+        self.rect.bottom = Settings.height - 1
 
         #Variablen für die Bewegung des Spielers.
         self.direction = 0
         self.lock_left = 0
         self.lock_right = 0
+        self.lock_up = 0
+        self.lock_down = 0
+
+        self.floatfield_activation = 580
 
     def update(self):
         #Durchlauf des Arrays "Idle" für die Animation beim stehen bleiben.
@@ -107,6 +123,14 @@ class Player(pygame.sprite.Sprite):
         if self.rect.x >= Settings.width - 48:
             self.lock_right = 1
         else: self.lock_right = 0
+
+        if self.rect.top <= 0:
+            self.lock_up = 1
+        else: self.lock_up = 0
+        
+        if self.rect.bottom >= Settings.height:
+            self.lock_down = 1
+        else: self.lock_down = 0
 
         #Bewegung von Links nach Rechts.
         keys = pygame.key.get_pressed()
@@ -130,11 +154,21 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.images_mov[int(self.index_mov)]
                 self.image = pygame.transform.scale(self.image, (48, 84))
 
+        if self.lock_down == 0:
+            if keys[pygame.K_DOWN]:
+                self.rect.y += self.speed
+
+        if self.lock_up == 0:
+            if keys[pygame.K_UP]:
+                self.rect.y -= self.speed
+
         #Ändern der Spriterichtung
         if self.direction == 1:
             self.image = pygame.transform.flip(self.image, True, False)
         else:
             self.image = pygame.transform.flip(self.image, False, False)
+
+        print(self.rect.bottom)
 
 class TeleportHelper(pygame.sprite.Sprite):
     def __init__(self):
@@ -164,7 +198,7 @@ class PowerUp(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (40, 40))
         self.rect = self.image.get_rect()
         self.speed = 4
-        self.spawn_timer = random.randrange(0, 1000)
+        self.spawn_timer = random.randrange(0, 10000)
         self.rect.centery = -100
         self.rect.centerx = random.randrange(20, Settings.width-20)
 
@@ -206,6 +240,11 @@ class Game(object):
         #Powerup
         self.pu_counter = 0
         self.all_pus = pygame.sprite.Group()
+
+        #Float Field
+        self.float_field = FloatField()
+        self.all_float_fields = pygame.sprite.Group()
+        self.all_float_fields.add(self.float_field)
 
         #Schwierigkeit wird auf 0 gesetzt am Anfang des Spiels.
         self.difficulty = 0
@@ -281,9 +320,13 @@ class Game(object):
             self.all_falling_objects.draw(self.screen)
             self.all_falling_objects.update()
 
+            self.all_float_fields.update()
+            if self.spieler.rect.bottom <= self.spieler.floatfield_activation:
+                self.all_float_fields.draw(self.screen)
+
             self.all_pus.draw(self.screen)
             self.all_pus.update()
-            if self.pu_counter == random.randrange(0, 1000):
+            if self.pu_counter == random.randrange(0, 10000):
                 self.all_pus.add(PowerUp())
 
             #Der Spieler soll im endscreen nicht zu sehen sein.
